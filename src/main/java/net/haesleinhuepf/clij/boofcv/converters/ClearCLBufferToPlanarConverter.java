@@ -39,7 +39,7 @@ public class ClearCLBufferToPlanarConverter extends AbstractCLIJConverter<ClearC
                 clij.op().copySlice(source, plane, z);
                 ImageGray grayIn = clij.convert(plane, ImageGray.class);
                 if (output == null) {
-                    output = new Planar(grayIn.getClass(), grayIn.getWidth(), grayIn.getHeight(), 1);
+                    output = new Planar(grayIn.getClass(), grayIn.getWidth(), grayIn.getHeight(), (int)source.getDepth());
                 }
                 output.setBand(z, grayIn);
             }
