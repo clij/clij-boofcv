@@ -49,9 +49,11 @@ public class CLIJBoofCVBenchmarking {
         Planar<GrayU8> blurred = input.createSameShape();
 
         // size of the blur kernel. square region with a width of radius*2 + 1
-        float sigma = 2;
+        float sigma = 5;
         int radius = CLIJUtilities.sigmaToKernelSize(sigma) / 2;
 
+        System.out.println("Image size: " + imp.getWidth() + "/" + imp.getHeight());
+        System.out.println("sigma = " + sigma);
         for (int i = 0; i < 5; i++) {
             long time = System.currentTimeMillis();
             IJ.run(imp,"Gaussian Blur...", "sigma=" + sigma);
