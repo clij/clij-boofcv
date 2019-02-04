@@ -26,27 +26,9 @@ import java.nio.ShortBuffer;
 @Plugin(type = CLIJConverterPlugin.class)
 public class ImageGrayToClearCLBufferConverter extends AbstractCLIJConverter<ImageGray, ClearCLBuffer> {
 
-    final int THIRD_DIMENSION_Z = 0;
-    final int THIRD_DIMENSION_T = 1;
-    final int THIRD_DIMENSION_C = 2;
-    final int THIRD_DIMENSION_NONE = -1;
-
-    private void setThirdDimension(ImagePlus imp, int thirdDimension, int value) {
-        if (thirdDimension == THIRD_DIMENSION_Z) {
-            imp.setZ(value);
-        } else if (thirdDimension == THIRD_DIMENSION_C) {
-            imp.setC(value);
-        } else if (thirdDimension == THIRD_DIMENSION_T) {
-            imp.setT(value);
-        }
-    }
-
     @Override
     public ClearCLBuffer convert(ImageGray source) {
         long[] dimensions = new long[]{source.getWidth(), source.getHeight()};
-
-        int numberOfPixelsPerSlice = (int)(dimensions[0] * dimensions[1]);
-        long numberOfPixels = numberOfPixelsPerSlice;
 
         if (source instanceof GrayU8) {
             ClearCLBuffer target = clij.createCLBuffer(dimensions, NativeTypeEnum.UnsignedByte);
