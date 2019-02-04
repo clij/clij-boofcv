@@ -14,6 +14,7 @@ import boofcv.struct.image.Planar;
 import ij.IJ;
 import ij.ImageJ;
 import ij.ImagePlus;
+import javafx.application.Platform;
 import net.haesleinhuepf.clij.CLIJ;
 import net.haesleinhuepf.clij.clearcl.ClearCLBuffer;
 
@@ -38,10 +39,7 @@ public class BoofCVDemo {
 
         ClearCLBuffer bufferIn = clij.convert(imp, ClearCLBuffer.class);
 
-        GrayU8 grayIn = (GrayU8) clij.convert(bufferIn, ImageGray.class);
-
-        Planar<GrayU8> input = new Planar<GrayU8>(GrayU8.class, grayIn.getWidth(), grayIn.getHeight(), 1);
-        input.setBand(0, grayIn);
+        Planar<GrayU8> input = clij.convert(bufferIn, Planar.class);
 
         //ConvertBufferedImage.convertFrom(buffered, true, ImageType.pl(1, GrayU8.class));
         Planar<GrayU8> blurred = input.createSameShape();
@@ -60,7 +58,6 @@ public class BoofCVDemo {
         // Apply a median filter using image type specific procedural interface.  Won't work if the type
         // isn't known at compile time
         BlurImageOps.median(input,blurred,radius);
-
 
         // Show result
         ClearCLBuffer buffer = clij.convert(blurred.getBand(0), ClearCLBuffer.class);
