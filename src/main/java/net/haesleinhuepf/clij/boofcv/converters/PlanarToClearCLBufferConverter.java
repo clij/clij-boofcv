@@ -25,7 +25,35 @@ public class PlanarToClearCLBufferConverter extends AbstractCLIJConverter<Planar
 
     @Override
     public ClearCLBuffer convert(Planar source) {
-        return clij.convert(source.getBand(0), ClearCLBuffer.class);
+        if (source.bands.length == 1) {
+            return clij.convert(source.getBand(0), ClearCLBuffer.class);
+        } else {
+
+            long[] dimensions = {source.getWidth(), source.getHeight(), source.bands.length};
+
+            NativeTypeEnum type = null;
+            if (source.getBand(0) instanceof GrayU8) {
+                type = NativeTypeEnum.UnsignedByte;
+            } else if (source.getBand(0) instanceof GrayU16) {
+                type = NativeTypeEnum.UnsignedShort;
+            } else if (source.getBand(0) instanceof GrayS16) {
+                type = NativeTypeEnum.Short;
+            } else if (source.getBand(0) instanceof GrayF32) {
+                type = NativeTypeEnum.Float;
+            } else {
+                throw new IllegalArgumentException("Unsupported type: " + source.getBand(0));
+            }
+
+            ClearCLBuffer stack = clij.createCLBuffer(dimensions, type);
+
+            for (int z = 0; z < stack.getDepth(); z++) {
+                ClearCLBuffer slice = clij.convert(source.getBand(z), ClearCLBuffer.class);
+                clij.op().copySlice(slice, stack, z);
+                slice.close();
+            }
+
+            return stack;
+        }
     }
 
     @Override
