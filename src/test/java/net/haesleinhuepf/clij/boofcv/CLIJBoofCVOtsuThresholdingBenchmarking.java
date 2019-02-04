@@ -1,22 +1,23 @@
 package net.haesleinhuepf.clij.boofcv;
 
-import boofcv.abst.filter.blur.BlurFilter;
-import boofcv.alg.filter.blur.BlurImageOps;
+import boofcv.alg.filter.binary.GThresholdImageOps;
 import boofcv.alg.filter.blur.GBlurImageOps;
-import boofcv.factory.filter.blur.FactoryBlurFilter;
+import boofcv.struct.image.GrayF32;
 import boofcv.struct.image.GrayU8;
+import boofcv.struct.image.ImageGray;
 import boofcv.struct.image.Planar;
 import ij.IJ;
 import ij.ImageJ;
 import ij.ImagePlus;
 import net.haesleinhuepf.clij.CLIJ;
 import net.haesleinhuepf.clij.clearcl.ClearCLBuffer;
+import net.haesleinhuepf.clij.coremem.enums.NativeTypeEnum;
 import net.haesleinhuepf.clij.test.TestUtilities;
 import net.haesleinhuepf.clij.utilities.CLIJUtilities;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.numeric.real.FloatType;
-import org.jruby.RubyProcess;
+import net.imglib2.view.Views;
 
 /**
  * CLIJBoofCVGaussianBlurBenchmarking
@@ -26,11 +27,11 @@ import org.jruby.RubyProcess;
  * Author: @haesleinhuepf
  * 02 2019
  */
-public class CLIJBoofCVGaussianBlurBenchmarking {
+public class CLIJBoofCVOtsuThresholdingBenchmarking {
     public static void main(String... args) {
 
         // get test image
-        ImagePlus imp = TestUtilities.getRandomImage(1024, 1024, 1, 32, 0, 100);
+        ImagePlus imp = TestUtilities.getRandomImage(10240, 10240, 1, 32, 0, 100);
         imp.show();
         RandomAccessibleInterval<FloatType> img = ImageJFunctions.convertFloat(imp);
 
@@ -42,11 +43,11 @@ public class CLIJBoofCVGaussianBlurBenchmarking {
 
         // convert from ImageJ to GPU
         ClearCLBuffer bufferIn = clij.convert(imp, ClearCLBuffer.class);
-        ClearCLBuffer bufferOut = clij.create(bufferIn);
+        ClearCLBuffer bufferOut = clij.create(bufferIn.getDimensions(), NativeTypeEnum.UnsignedByte);
 
         // convert from GPU to boofCV
-        Planar<GrayU8> input = clij.convert(bufferIn, Planar.class);
-        Planar<GrayU8> blurred = input.createSameShape();
+        GrayF32 input = (GrayF32) clij.convert(bufferIn, ImageGray.class);
+        GrayU8 thresholded = new GrayU8(input.width,input.height);;
 
         // size of the blur kernel. square region with a width of radius*2 + 1
         float sigma = 5;
@@ -56,30 +57,32 @@ public class CLIJBoofCVGaussianBlurBenchmarking {
         System.out.println("sigma = " + sigma);
         for (int i = 0; i < 5; i++) {
             long time = System.currentTimeMillis();
-            IJ.run(imp,"Gaussian Blur...", "sigma=" + sigma);
-            System.out.println("ImageJ1 Gaussian blur took " + (System.currentTimeMillis() - time) + " msec");
+            IJ.setAutoThreshold(imp,"Otsu dark");
+            IJ.run(imp, "Convert to Mask", "");
+            //IJ.run(imp,"Gaussian Blur...", "sigma=" + sigma);
+            System.out.println("ImageJ1 Otsu threshold took " + (System.currentTimeMillis() - time) + " msec");
         }
 
         for (int i = 0; i < 5; i++) {
             long time = System.currentTimeMillis();
-            ij.op().filter().gauss(img, sigma, sigma);
-            System.out.println("ImageJ-Ops Gaussian blur took " + (System.currentTimeMillis() - time) + " msec");
+            ij.op().threshold().otsu(Views.iterable(img));
+            System.out.println("ImageJ-Ops Otsu threshold took " + (System.currentTimeMillis() - time) + " msec");
         }
 
         for (int i = 0; i < 5; i++) {
             long time = System.currentTimeMillis();
-            GBlurImageOps.gaussian(input, blurred, sigma, radius, null);
-            System.out.println("BoofCV Gaussian blur took " + (System.currentTimeMillis() - time) + " msec");
+            GThresholdImageOps.threshold(input, thresholded, GThresholdImageOps.computeOtsu(input, 0, 255), true);
+            System.out.println("BoofCV Otsu threshold took " + (System.currentTimeMillis() - time) + " msec");
         }
 
         for (int i = 0; i < 5; i++) {
             long time = System.currentTimeMillis();
-            clij.op().blurFast(bufferIn, bufferOut, sigma, sigma, 0);
-            System.out.println("clij Gaussian blur took " + (System.currentTimeMillis() - time) + " msec");
+            clij.op().automaticThreshold(bufferIn, bufferOut, "Otsu", 0f, 255f, 256);
+            System.out.println("clij Otsu threshold took " + (System.currentTimeMillis() - time) + " msec");
         }
 
         // Show result
-        ClearCLBuffer buffer = clij.convert(blurred.getBand(0), ClearCLBuffer.class);
+        ClearCLBuffer buffer = clij.convert(thresholded, ClearCLBuffer.class);
         clij.show(buffer, "buffer");
 
         // cleanup
