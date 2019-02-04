@@ -86,8 +86,8 @@ public class CLIJBoofCVGaussianBlurBenchmarking {
             GBlurImageOps.gaussian(input, blurred, sigma, radius, null);
             System.out.println("BoofCV Gaussian blur took " + (System.currentTimeMillis() - time) + " msec");
         }
-        // Show result
         if (showResults) {
+            // Show result
             clij.show(blurred, "boofcv");
         }
 
@@ -96,9 +96,10 @@ public class CLIJBoofCVGaussianBlurBenchmarking {
             clij.op().blurFast(bufferIn, bufferOut, sigma, sigma, 0);
             System.out.println("clij Gaussian blur took " + (System.currentTimeMillis() - time) + " msec");
         }
-        // show result
-        clij.show(bufferOut, "clij");
-
+        if (showResults) {
+            // show result
+            clij.show(bufferOut, "clij");
+        }
 
         // cleanup
         bufferIn.close();
