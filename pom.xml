@@ -8,13 +8,13 @@
 	<parent>
 		<groupId>net.haesleinhuepf</groupId>
 		<artifactId>clij-parent-pom</artifactId>
-		<version>0.9.1</version>
+		<version>1.0.0-BETA</version>
 		<relativePath />
 	</parent>
 
 	<groupId>net.haesleinhuepf</groupId>
 	<artifactId>clij-boofcv</artifactId>
-	<version>0.1.0</version>
+	<version>0.2.0</version>
 
 	<name>clij-boofcv-bridge</name>
 	<description>clij-boofcv-bridge</description>
