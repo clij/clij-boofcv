@@ -93,7 +93,7 @@ public class CLIJBoofCVGaussianBlurBenchmarking {
 
         for (int i = 0; i < 5; i++) {
             long time = System.currentTimeMillis();
-            clij.op().blurFast(bufferIn, bufferOut, sigma, sigma, 0);
+            clij.op().blur(bufferIn, bufferOut, sigma, sigma, 0f);
             System.out.println("clij Gaussian blur took " + (System.currentTimeMillis() - time) + " msec");
         }
         if (showResults) {
