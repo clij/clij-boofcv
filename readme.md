@@ -68,3 +68,7 @@ To allow maven finding this artifact, add a repository to your pom.xml file:
 ## Feedback
 
 Feedback is highly appreciated. Just tell me via email (rhaase@mpi-cbg.de), as [github issue](https://github.com/clij/clij-boofcv/issues) or on twitter [@haesleinhuepf](https://twitter.com/haesleinhuepf).
+
+[Back to CLIJ documentation](https://clij.github.io/)
+
+[Imprint](https://clij.github.io/imprint)
